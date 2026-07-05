@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Documentos Institucionais - TETO (V4.2)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --teto-ciano: #0092DD;
+            --teto-amarelo: #FDC533;
+            --teto-verde: #2FAC66;
+            --teto-azul-escuro: #005CA9;
+            --teto-vermelho: #E94362;
+            --teto-laranja: #F08866;
+            --teto-roxo: #954897;
+            --teto-preto: #1D1D1B;
+            --teto-cinza-claro: #F0F3F6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--teto-cinza-claro);
+            color: var(--teto-preto);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .tabs-nav {
+            display: flex;
+            background: #e2e8f0;
+            border-bottom: 1px solid #cbd5e1;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10.5pt;
+            font-weight: 500;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .tab-btn:hover { background: #cbd5e1; color: var(--teto-preto); }
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--teto-ciano);
+            font-weight: 600;
+            border-bottom: 2px solid var(--teto-ciano);
+        }
+
+        .tab-content { display: none; padding: 20px; }
+        .tab-content.active { display: block; }
+
+        .sidebar {
+            width: 480px;
+            background-color: #ffffff;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px 20px 10px 20px;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .sidebar-header h2 {
+            font-family: 'Fredoka', sans-serif;
+            color: var(--teto-ciano);
+            font-size: 16pt;
+        }
+
+        .sidebar-scrollable {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .section-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 11pt;
+            text-transform: uppercase;
+            color: var(--teto-azul-escuro);
+            margin: 15px 0 10px 0;
+            padding-bottom: 4px;
+            border-bottom: 2px solid var(--teto-ciano);
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 8.5pt; font-weight: 600; margin-bottom: 4px; color: #4a5568; }
+        .form-group input[type="text"], 
+        .form-group textarea, 
+        .form-group select {
+            width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+            font-size: 9.5pt; font-family: 'Montserrat', sans-serif; background-color: #f8fafc;
+        }
+        .form-group input[type="text"]:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: var(--teto-ciano); background-color: #ffffff; outline: none;
+        }
+
+        .file-upload-btn {
+            display: block; width: 100%; background-color: #f0f9ff; color: var(--teto-azul-escuro);
+            border: 1px dashed var(--teto-ciano); padding: 8px; border-radius: 6px;
+            text-align: center; font-size: 8.5pt; font-weight: 600; cursor: pointer; position: relative;
+        }
+        .file-upload-btn input[type="file"] { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+
+        .form-row-2 { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .form-row-2 .form-col { flex: 1; }
+        
+        .slider-with-input {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .slider-with-input input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+        }
+        .slider-with-input input[type="number"] {
+            width: 60px;
+            padding: 4px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 9pt;
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+        }
+        .slider-with-input input[type="number"]:focus {
+            border-color: var(--teto-ciano);
+            outline: none;
+        }
+
+        .dynamic-item-box {
+            background: #f8fafc; padding: 12px; border-radius: 6px; margin-bottom: 12px;
+            border: 1px solid #e2e8f0; position: relative;
+        }
+        .btn-delete {
+            position: absolute; top: 10px; right: 10px; color: var(--teto-vermelho);
+            border: none; background: none; cursor: pointer; font-size: 8pt; font-weight: 600;
+        }
+
+        .color-selector-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+        .color-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-dot.active { border-color: #000; transform: scale(1.1); }
+
+        .btn-action-outline {
+            display: block; width: 100%; background: #ffffff; color: var(--teto-ciano);
+            border: 1px solid var(--teto-ciano); padding: 8px; font-size: 9pt; font-weight: 600;
+            border-radius: 6px; cursor: pointer; text-align: center; margin-top: 5px;
+        }
+        .btn-action-outline:hover { background: var(--teto-ciano); color: #fff; }
+
+        .btn-main-print {
+            display: block; width: calc(100% - 40px); background-color: var(--teto-ciano); color: white;
+            border: none; padding: 12px; font-family: 'Fredoka', sans-serif; font-size: 12pt;
+            border-radius: 6px; cursor: pointer; margin: 15px auto; text-align: center;
+            box-shadow: 0 4px 10px rgba(0,146,221,0.2);
+        }
+        .btn-main-print:hover { background-color: var(--teto-azul-escuro); }
+
+        .orientation-selector {
+            display: flex;
+            gap: 8px;
+            margin: 15px 20px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .orientation-btn {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #cbd5e1;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 9pt;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .orientation-btn.active {
+            border-color: var(--teto-ciano);
+            background: var(--teto-ciano);
+            color: white;
+        }
+
+        .manual-text { font-size: 9.5pt; line-height: 1.5; color: #334155; }
+        .manual-text h3 { font-family: 'Fredoka', sans-serif; color: var(--teto-azul-escuro); font-size: 11pt; margin: 15px 0 5px 0; }
+        .manual-text ul { margin-left: 15px; margin-bottom: 10px; }
+        .manual-text ol { margin-left: 15px; margin-bottom: 10px; }
+
+        .preview-container {
+            flex-grow: 1; padding: 30px; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start;
+        }
+        
+        .a4-page {
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            position: relative;
+            box-sizing: border-box;
+            padding: 25mm 20mm 25mm 20mm;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .a4-page.portrait {
+            width: 210mm;
+            min-height: 297mm;
+        }
+        
+        .a4-page.landscape {
+            width: 297mm;
+            min-height: 210mm;
+        }
+
+        .background-layer { position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; }
+        .trama-element { 
+            position: absolute; 
+            transform-origin: center center; 
+            cursor: move;
+            user-select: none;
+        }
+        .trama-element:hover {
+            outline: 2px dashed var(--teto-ciano);
+            outline-offset: 4px;
+        }
+        .trama-element.dragging {
+            opacity: 0.5;
+            z-index: 1000;
+        }
+
+        .content-layer { position: relative; z-index: 2; pointer-events: auto; display: flex; flex-direction: column; height: 100%; }
+        
+        .doc-header { width: 100%; margin-bottom: 20mm; min-height: 60px; }
+        .logo-wrapper img { max-height: 60px; display: block; width: auto; }
+        .logo-left { display: flex; justify-content: flex-start; }
+        .logo-center { display: flex; justify-content: center; }
+        .logo-right { display: flex; justify-content: flex-end; }
+
+        .canvas-item { margin-bottom: 15px; line-height: 1.5; word-wrap: break-word; text-align: justify; }
+        .canvas-title { font-weight: 700; line-height: 1.2; margin-bottom: 10px; }
+        .canvas-subtitle { font-weight: 500; line-height: 1.3; margin-bottom: 12px; }
+        .canvas-body { font-weight: 400; white-space: pre-wrap; }
+        
+        .canvas-spacer {
+            background: repeating-linear-gradient(
+                45deg,
+                #f0f3f6,
+                #f0f3f6 10px,
+                #e2e8f0 10px,
+                #e2e8f0 20px
+            );
+            border: 1px dashed #cbd5e1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8pt;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        
+        .canvas-image {
+            margin: 15px 0;
+            display: block;
+        }
+        .canvas-image img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        .canvas-image.align-left { text-align: left; }
+        .canvas-image.align-center { text-align: center; }
+        .canvas-image.align-right { text-align: right; }
+
+        .signature-container { margin-top: auto; padding-top: 30px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .signature-line { width: 200px; height: 1px; background-color: #cbd5e1; margin-bottom: 8px; }
+        .signature-name { font-weight: 600; font-size: 10pt; }
+        .signature-role { font-size: 9pt; color: #64748b; }
+
+        .doc-footer-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background-color: var(--teto-ciano); z-index: 2; }
+
+        /* Biblioteca de Imagens */
+        .image-library-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .image-library-item {
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        .image-library-item:hover {
+            border-color: var(--teto-ciano);
+            box-shadow: 0 2px 8px rgba(0,146,221,0.15);
+        }
+        .image-library-item.selected {
+            border-color: var(--teto-verde);
+            background: #f0fdf4;
+        }
+        .image-library-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+        .image-library-item .img-name {
+            font-size: 8pt;
+            color: #475569;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .image-source-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+        .image-source-tab {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 8.5pt;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .image-source-tab.active {
+            background: var(--teto-ciano);
+            color: white;
+            border-color: var(--teto-ciano);
+        }
+
+        .element-list {
+            margin-top: 15px;
+            border-top: 2px solid #e2e8f0;
+            padding-top: 15px;
+        }
+        .element-list-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .element-list-item img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        .element-list-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+        .element-list-item .name {
+            font-size: 9pt;
+            font-weight: 600;
+            color: var(--teto-azul-escuro);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .element-list-item .type {
+            font-size: 8pt;
+            color: #64748b;
+        }
+        .element-list-item .btn-remove-small {
+            background: var(--teto-vermelho);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 8pt;
+            font-weight: 600;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #cbd5e1;
+            border-top-color: var(--teto-ciano);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media print {
+            body { 
+                background-color: #ffffff; 
+                display: block; 
+                overflow: visible;
+            }
+            .sidebar { display: none !important; }
+            .preview-container { 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                display: block; 
+                overflow: visible;
+            }
+            .a4-page { 
+                box-shadow: none !important; 
+                margin: 0 !important;
+                width: 100% !important;
+                min-height: 100% !important;
+                padding: 15mm !important;
+            }
+            .a4-page.portrait {
+                width: 210mm !important;
+                min-height: 297mm !important;
+            }
+            .a4-page.landscape {
+                width: 297mm !important;
+                min-height: 210mm !important;
+            }
+            @page { 
+                size: auto;
+                margin: 0; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Sistema TETO DocDesign</h2>
+        </div>
+        
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('conteudo')">Conteúdo</button>
+            <button class="tab-btn" onclick="switchTab('grafismos')">Grafismos</button>
+            <button class="tab-btn" onclick="switchTab('biblioteca')">Biblioteca</button>
+            <button class="tab-btn" onclick="switchTab('sobre')">Como Funciona</button>
+        </div>
+
+        <div class="sidebar-scrollable">
+            
+            <div id="tab-conteudo" class="tab-content active">
+                <div class="section-title">Logótipo Institucional</div>
+                <div class="form-group">
+                    <label>Fonte da Imagem</label>
+                    <div class="image-source-tabs">
+                        <button class="image-source-tab active" onclick="setImageSource('logo', 'upload')">Upload</button>
+                        <button class="image-source-tab" onclick="setImageSource('logo', 'link')">Link</button>
+                        <button class="image-source-tab" onclick="setImageSource('logo', 'library')">Biblioteca</button>
+                    </div>
+                </div>
+                
+                <div id="logo-upload-section">
+                    <div class="file-upload-btn">📁 Escolher arquivo de imagem...
+                        <input type="file" accept="image/*" onchange="handleLogoUpload(this)">
+                    </div>
+                </div>
+                
+                <div id="logo-link-section" style="display:none;">
+                    <input type="text" id="logo-url" placeholder="URL da imagem" oninput="renderAll()">
+                </div>
+                
+                <div id="logo-library-section" style="display:none;">
+                    <p style="font-size: 8.5pt; color: #64748b; margin-bottom: 8px;">Clique em uma imagem da biblioteca:</p>
+                    <div id="logo-library-grid" class="image-library-grid"></div>
+                </div>
+
+                <div class="form-row-2" style="margin-top: 12px;">
+                    <div class="form-col">
+                        <label>Posição da Logo</label>
+                        <select id="logo-position" onchange="renderAll()">
+                            <option value="logo-left">À Esquerda</option>
+                            <option value="logo-center" selected>Centralizado</option>
+                            <option value="logo-right">À Direita</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tamanho da Logo (%)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="logo-size" min="40" max="160" value="100" oninput="syncSliderToInput('logo-size', 'logo-size-num'); renderAll()">
+                        <input type="number" id="logo-size-num" min="40" max="160" value="100" oninput="syncInputToSlider('logo-size-num', 'logo-size'); renderAll()">
+                    </div>
+                </div>
+
+                <div class="section-title">Plano de Fundo (Texturas)</div>
+                <div class="form-group">
+                    <label>Fonte da Textura</label>
+                    <div class="image-source-tabs">
+                        <button class="image-source-tab active" onclick="setImageSource('bg', 'upload')">Upload</button>
+                        <button class="image-source-tab" onclick="setImageSource('bg', 'link')">Link</button>
+                        <button class="image-source-tab" onclick="setImageSource('bg', 'library')">Biblioteca</button>
+                    </div>
+                </div>
+                
+                <div id="bg-upload-section">
+                    <div class="file-upload-btn">📁 Escolher textura...
+                        <input type="file" accept="image/*" onchange="handleBgUpload(this)">
+                    </div>
+                </div>
+                
+                <div id="bg-link-section" style="display:none;">
+                    <input type="text" id="bg-image-url" placeholder="URL da textura" oninput="renderAll()">
+                </div>
+                
+                <div id="bg-library-section" style="display:none;">
+                    <p style="font-size: 8.5pt; color: #64748b; margin-bottom: 8px;">Texturas disponíveis (colunas D-F):</p>
+                    <div id="bg-library-grid" class="image-library-grid"></div>
+                </div>
+
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>Opacidade do Fundo (%)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="bg-opacity" min="0" max="100" value="100" oninput="syncSliderToInput('bg-opacity', 'bg-opacity-num'); renderAll()">
+                        <input type="number" id="bg-opacity-num" min="0" max="100" value="100" oninput="syncInputToSlider('bg-opacity-num', 'bg-opacity'); renderAll()">
+                    </div>
+                </div>
+
+                <div class="section-title">Estrutura de Textos do Documento</div>
+                <div id="text-blocks-container"></div>
+                <button class="btn-action-outline" onclick="addTextBlock('title')">+ Adicionar Título</button>
+                <button class="btn-action-outline" onclick="addTextBlock('subtitle')">+ Adicionar Subtítulo</button>
+                <button class="btn-action-outline" onclick="addTextBlock('body')">+ Adicionar Bloco de Texto</button>
+                <button class="btn-action-outline" onclick="addSpacer()">+ Adicionar Espaço (Respiro)</button>
+                <button class="btn-action-outline" onclick="addImageBlock()">+ Adicionar Imagem Gráfica</button>
+
+                <div class="section-title">Assinatura do Documento</div>
+                <div class="form-group">
+                    <label>Nome do Responsável / Emissor</label>
+                    <input type="text" id="sig-name" value="" placeholder="Ex: Márcio Santos" oninput="renderAll()">
+                </div>
+                <div class="form-group">
+                    <label>Cargo / Função</label>
+                    <input type="text" id="sig-role" value="" placeholder="Ex: Coordenação de Comunicação" oninput="renderAll()">
+                </div>
+            </div>
+
+            <div id="tab-grafismos" class="tab-content">
+                <div class="section-title">Inserção de Tramas e Ícones</div>
+                <p style="font-size: 8.5pt; color: #64748b; margin-bottom: 12px;">
+                    Carregue as texturas ou miscelâneas. <strong>Arraste com o mouse</strong> no canvas para posicionar.
+                </p>
+                
+                <div class="form-group">
+                    <label>Fonte da Imagem</label>
+                    <div class="image-source-tabs">
+                        <button class="image-source-tab active" onclick="setImageSource('trama', 'upload')">Upload</button>
+                        <button class="image-source-tab" onclick="setImageSource('trama', 'link')">Link</button>
+                        <button class="image-source-tab" onclick="setImageSource('trama', 'library')">Biblioteca</button>
+                    </div>
+                </div>
+                
+                <div id="trama-upload-section">
+                    <div class="file-upload-btn">📁 Upload de Grafismo Local
+                        <input type="file" accept="image/*" onchange="handleTramaUpload(this, 'new')">
+                    </div>
+                </div>
+                
+                <div id="trama-link-section" style="display:none;">
+                    <input type="text" id="trama-url-temp" placeholder="URL da imagem" style="margin-bottom: 8px;">
+                    <button class="btn-action-outline" onclick="addTramaFromLink()">Adicionar Trama</button>
+                </div>
+                
+                <div id="trama-library-section" style="display:none;">
+                    <div id="trama-library-grid" class="image-library-grid"></div>
+                </div>
+
+                <div class="element-list" id="trama-elements-list">
+                    <h4 style="font-size: 10pt; color: var(--teto-azul-escuro); margin-bottom: 10px;">Elementos Adicionados:</h4>
+                    <div id="trama-list-container"></div>
+                </div>
+            </div>
+
+            <div id="tab-biblioteca" class="tab-content">
+                <div class="section-title">Biblioteca de Imagens TETO</div>
+                <p style="font-size: 9pt; color: #64748b; margin-bottom: 15px;">
+                    Imagens carregadas da planilha institucional. Clique para usar.
+                </p>
+                
+                <div id="library-loading" style="text-align: center; padding: 20px;">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top: 10px; font-size: 9pt; color: #64748b;">Carregando biblioteca...</p>
+                </div>
+                
+                <div id="library-content" style="display:none;">
+                    <div class="form-group">
+                        <label>Filtrar por categoria:</label>
+                        <select id="library-filter" onchange="renderLibrary()">
+                            <option value="all">Todas</option>
+                            <option value="logos">Logos</option>
+                            <option value="texturas">Texturas/Fundos</option>
+                            <option value="formas">Formas Orgânicas</option>
+                            <option value="tramas">Tramas</option>
+                            <option value="icones">Ícones</option>
+                        </select>
+                    </div>
+                    
+                    <div id="library-grid" class="image-library-grid" style="grid-template-columns: repeat(3, 1fr);"></div>
+                </div>
+            </div>
+
+            <div id="tab-sobre" class="tab-content manual-text">
+                <div class="section-title">Manual do Utilizador</div>
+                <p>Esta ferramenta foi construída especificamente para garantir que qualquer membro da equipa possa estruturar relatórios, atas, editais e comunicações formais sem ferir as diretrizes do <strong>Manual de Marca TETO</strong>.</p>
+                
+                <h3>O que o sistema faz?</h3>
+                <ul>
+                    <li><strong>Padronização Automática:</strong> Força o uso exclusivo das fontes institucionais (Fredoka para impacto/proximidade e Montserrat para leitura formal).</li>
+                    <li><strong>Biblioteca Integrada:</strong> Acesso direto às imagens institucionais via planilha Google.</li>
+                    <li><strong>Arrastar e Soltar:</strong> Movimente tramas e elementos gráficos livremente no canvas com o mouse.</li>
+                    <li><strong>Controle Cromático Rico:</strong> Permite escolher entre a paleta oficial (Ciano, Amarelo, Verde, Vermelho, Roxo) para títulos.</li>
+                    <li><strong>Múltiplas Fontes:</strong> Upload local, links URL ou biblioteca institucional.</li>
+                    <li><strong>Opacidade Controlada:</strong> Ajuste a transparência do plano de fundo.</li>
+                    <li><strong>Gerenciamento Visual:</strong> Lista de elementos com nomes e exclusão fácil.</li>
+                </ul>
+
+                <h3>Como Operar:</h3>
+                <ol>
+                    <li>Selecione a fonte da imagem (Upload, Link ou Biblioteca).</li>
+                    <li>Na aba <strong>Biblioteca</strong>, veja todas as imagens disponíveis da planilha TETO.</li>
+                    <li>Para tramas/grafismos, <strong>arraste com o mouse</strong> no canvas para posicionar.</li>
+                    <li>Ajuste opacidade, rotação e tamanho com precisão usando os campos numéricos.</li>
+                    <li>Use a lista de elementos na aba Grafismos para identificar e remover itens.</li>
+                    <li>Escolha a orientação da página (Retrato ou Paisagem).</li>
+                    <li>Clique em <strong>Salvar como PDF</strong>.</li>
+                </ol>
+
+                <h3>Dicas de Impressão:</h3>
+                <ul>
+                    <li><strong>Desmarque</strong> "Ajustar à página" ou "Fit to page"</li>
+                    <li><strong>Ative</strong> "Gráficos de fundo" ou "Background graphics"</li>
+                    <li><strong>Margens:</strong> Escolha "Nenhuma" ou "Mínima"</li>
+                    <li><strong>Escala:</strong> Mantenha em 100%</li>
+                </ul>
+            </div>
+
+            <div class="orientation-selector">
+                <button class="orientation-btn active" id="btn-portrait" onclick="setOrientation('portrait')">📄 Retrato</button>
+                <button class="orientation-btn" id="btn-landscape" onclick="setOrientation('landscape')">📃 Paisagem</button>
+            </div>
+
+            <button class="btn-main-print" onclick="window.print()">Salvar como PDF</button>
+        </div>
+    </div>
+
+    <div class="preview-container">
+        <div class="a4-page portrait" id="page-canvas">
+            
+            <div class="background-layer" id="canvas-bg-layer"></div>
+
+            <div class="content-layer">
+                <div class="doc-header" id="canvas-header">
+                    <div id="canvas-logo-wrapper" class="logo-wrapper logo-center">
+                        <img id="canvas-logo" src="" alt="Logo TETO">
+                    </div>
+                </div>
+
+                <div id="canvas-text-stream" style="flex-grow: 1;"></div>
+
+                <div id="canvas-signature" class="signature-container" style="display: none;">
+                    <div class="signature-line"></div>
+                    <div id="canvas-sig-name" class="signature-name"></div>
+                    <div id="canvas-sig-role" class="signature-role"></div>
+                </div>
+            </div>
+
+            <div class="doc-footer-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        let textBlockCounter = 0;
+        let tramaCounter = 0;
+        let spacerCounter = 0;
+        let imageCounter = 0;
+        let imageLibrary = [];
+        let currentImageSources = {
+            logo: 'upload',
+            bg: 'upload',
+            trama: 'upload'
+        };
+
+        // Carregar biblioteca ao iniciar
+        window.onload = function() {
+            loadLibrary();
+            addTextBlock('title');
+            addTextBlock('body');
+        };
+
+        async function loadLibrary() {
+            try {
+                const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vStGWYNmugDSG9oTtYNg-EskuoI3vLT1_rmCUixw8xrm2c1NHuMov-LxwYrLdruTDdlE05ei5Gk5JXc/pub?gid=0&single=true&output=csv');
+                const csvText = await response.text();
+                parseCSV(csvText);
+            } catch (error) {
+                console.error('Erro ao carregar biblioteca:', error);
+                document.getElementById('library-loading').innerHTML = 
+                    '<p style="color: var(--teto-vermelho); font-size: 9pt;">Erro ao carregar biblioteca. Tente recarregar a página.</p>';
+            }
+        }
+
+        function parseCSV(csvText) {
+            const rows = csvText.split('\n').map(row => row.split(',').map(cell => cell.trim().replace(/^"|"$/g, '')));
+            
+            imageLibrary = [];
+            
+            // Processar rows baseado na estrutura da planilha
+            rows.forEach((row, index) => {
+                // Logos (colunas A-B, rows 5-8)
+                if (index >= 4 && index <= 7 && row[1]) {
+                    imageLibrary.push({
+                        id: `logo-${index}`,
+                        name: row[0] || `Logo ${index-4}`,
+                        url: row[1],
+                        category: 'logos'
+                    });
+                }
+                
+                // Texturas (colunas D-E-F, rows 5-8)
+                if (index >= 4 && index <= 7 && row[5]) {
+                    imageLibrary.push({
+                        id: `texture-${index}`,
+                        name: row[3] || `Textura ${index-4}`,
+                        url: row[5],
+                        category: 'texturas'
+                    });
+                }
+                
+                // Formas Orgânicas (colunas G-H)
+                if (row[7] && row[6]) {
+                    imageLibrary.push({
+                        id: `forma-${index}`,
+                        name: row[6],
+                        url: row[7],
+                        category: 'formas'
+                    });
+                }
+                
+                // Tramas (colunas J-K)
+                if (row[10] && row[9]) {
+                    imageLibrary.push({
+                        id: `trama-${index}`,
+                        name: row[9],
+                        url: row[10],
+                        category: 'tramas'
+                    });
+                }
+                
+                // Ícones (colunas M-N)
+                if (row[13] && row[12]) {
+                    imageLibrary.push({
+                        id: `icone-${index}`,
+                        name: row[12],
+                        url: row[13],
+                        category: 'icones'
+                    });
+                }
+            });
+            
+            document.getElementById('library-loading').style.display = 'none';
+            document.getElementById('library-content').style.display = 'block';
+            renderLibrary();
+            renderLibraryGrids();
+        }
+
+        function renderLibrary() {
+            const filter = document.getElementById('library-filter').value;
+            const grid = document.getElementById('library-grid');
+            grid.innerHTML = '';
+            
+            const filtered = filter === 'all' ? imageLibrary : imageLibrary.filter(img => img.category === filter);
+            
+            filtered.forEach(img => {
+                const div = document.createElement('div');
+                div.className = 'image-library-item';
+                div.innerHTML = `
+                    <img src="${img.url}" alt="${img.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2280%22><rect fill=%22%23e2e8f0%22 width=%22100%22 height=%2280%22/><text fill=%22%2364748b%22 x=%2250%22 y=%2250%22 text-anchor=%22middle%22>Erro</text></svg>'">
+                    <div class="img-name">${img.name}</div>
+                `;
+                div.onclick = () => selectFromLibrary(img);
+                grid.appendChild(div);
+            });
+        }
+
+        function renderLibraryGrids() {
+            // Grid para logo
+            const logoGrid = document.getElementById('logo-library-grid');
+            if (logoGrid) {
+                logoGrid.innerHTML = '';
+                imageLibrary.filter(img => img.category === 'logos').forEach(img => {
+                    const div = createLibraryItem(img, 'logo');
+                    logoGrid.appendChild(div);
+                });
+            }
+            
+            // Grid para bg
+            const bgGrid = document.getElementById('bg-library-grid');
+            if (bgGrid) {
+                bgGrid.innerHTML = '';
+                imageLibrary.filter(img => img.category === 'texturas').forEach(img => {
+                    const div = createLibraryItem(img, 'bg');
+                    bgGrid.appendChild(div);
+                });
+            }
+            
+            // Grid para trama
+            const tramaGrid = document.getElementById('trama-library-grid');
+            if (tramaGrid) {
+                tramaGrid.innerHTML = '';
+                imageLibrary.filter(img => ['formas', 'tramas', 'icones'].includes(img.category)).forEach(img => {
+                    const div = createLibraryItem(img, 'trama');
+                    tramaGrid.appendChild(div);
+                });
+            }
+        }
+
+        function createLibraryItem(img, type) {
+            const div = document.createElement('div');
+            div.className = 'image-library-item';
+            div.innerHTML = `
+                <img src="${img.url}" alt="${img.name}" onerror="this.style.display='none'">
+                <div class="img-name">${img.name}</div>
+            `;
+            div.onclick = () => {
+                if (type === 'logo') {
+                    document.getElementById('canvas-logo').src = img.url;
+                    renderAll();
+                } else if (type === 'bg') {
+                    document.getElementById('bg-image-url').value = img.url;
+                    renderAll();
+                } else if (type === 'trama') {
+                    addTramaFromLibrary(img);
+                }
+            };
+            return div;
+        }
+
+        function selectFromLibrary(img) {
+            alert(`Imagem selecionada: ${img.name}\nCategoria: ${img.category}\nUse nas abas apropriadas.`);
+        }
+
+        function setImageSource(type, source) {
+            currentImageSources[type] = source;
+            
+            // Atualizar tabs visuais
+            const tabs = document.querySelectorAll(`#${type}-upload-section, #${type}-link-section, #${type}-library-section`);
+            const tabButtons = document.querySelectorAll(`button[onclick*="setImageSource('${type}'"]`);
+            
+            tabs.forEach((tab, idx) => {
+                tab.style.display = (idx === 0 && source === 'upload') || 
+                                   (idx === 1 && source === 'link') || 
+                                   (idx === 2 && source === 'library') ? 'block' : 'none';
+            });
+            
+            tabButtons.forEach((btn, idx) => {
+                btn.classList.toggle('active', 
+                    (idx === 0 && source === 'upload') || 
+                    (idx === 1 && source === 'link') || 
+                    (idx === 2 && source === 'library')
+                );
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        function setOrientation(orientation) {
+            const canvas = document.getElementById('page-canvas');
+            canvas.className = `a4-page ${orientation}`;
+            
+            document.getElementById('btn-portrait').classList.remove('active');
+            document.getElementById('btn-landscape').classList.remove('active');
+            document.getElementById(`btn-${orientation}`).classList.add('active');
+        }
+
+        function syncSliderToInput(sliderId, inputId) {
+            const slider = document.getElementById(sliderId);
+            const input = document.getElementById(inputId);
+            if (input) input.value = slider.value;
+        }
+
+        function syncInputToSlider(inputId, sliderId) {
+            const input = document.getElementById(inputId);
+            const slider = document.getElementById(sliderId);
+            if (!input || !slider) return;
+            const value = parseInt(input.value);
+            if (!isNaN(value)) {
+                slider.value = Math.min(Math.max(value, parseInt(slider.min)), parseInt(slider.max));
+            }
+        }
+
+        function handleLogoUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('canvas-logo').src = e.target.result;
+                    renderAll();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleBgUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('bg-image-url').value = e.target.result;
+                    renderAll();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function addTextBlock(type) {
+            textBlockCounter++;
+            const id = textBlockCounter;
+            const container = document.getElementById('text-blocks-container');
+            
+            const div = document.createElement('div');
+            div.className = 'dynamic-item-box';
+            div.id = `text-block-ctrl-${id}`;
+            div.setAttribute('data-type', type);
+            div.setAttribute('data-order', Date.now());
+            
+            let labelName = type === 'title' ? 'Título' : (type === 'subtitle' ? 'Subtítulo' : 'Corpo de Texto');
+            let innerHTML = `
+                <button class="btn-delete" onclick="removeTextBlock(${id})">Excluir</button>
+                <label style="color:var(--teto-azul-escuro); font-weight:700;">${labelName} (#${id})</label>
+            `;
+
+            if (type === 'body') {
+                innerHTML += `<div class="form-group"><textarea id="text-val-${id}" rows="4" oninput="renderAll()" placeholder="Digite o parágrafo aqui..."></textarea></div>`;
+            } else {
+                innerHTML += `<div class="form-group"><input type="text" id="text-val-${id}" oninput="renderAll()" placeholder="Digite o texto aqui..." value="Texto Exemplo ${labelName}"></div>`;
+            }
+
+            innerHTML += `
+                <div class="form-row-2">
+                    <div class="form-col">
+                        <label>Fonte</label>
+                        <select id="text-font-${id}" onchange="renderAll()">
+                            <option value="'Fredoka', sans-serif" ${type==='title'?'selected':''}>Fredoka</option>
+                            <option value="'Montserrat', sans-serif" ${type==='body'?'selected':''}>Montserrat</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tamanho (pt)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="text-size-${id}" min="8" max="42" value="${type==='title'?24:(type==='subtitle'?14:11)}" oninput="syncSliderToInput('text-size-${id}', 'text-size-num-${id}'); renderAll()">
+                        <input type="number" id="text-size-num-${id}" min="8" max="42" value="${type==='title'?24:(type==='subtitle'?14:11)}" oninput="syncInputToSlider('text-size-num-${id}', 'text-size-${id}'); renderAll()">
+                    </div>
+                </div>
+            `;
+
+            if (type === 'title' || type === 'subtitle') {
+                innerHTML += `
+                    <label>Cor do Elemento</label>
+                    <div class="color-selector-grid" id="text-color-grid-${id}">
+                        ${tetoColors.map((c, i) => `<div class="color-dot ${i===0?'active':''}" style="background-color:${c.hex};" onclick="setBlockColor(${id}, '${c.hex}', this)"></div>`).join('')}
+                    </div>
+                    <input type="hidden" id="text-color-val-${id}" value="${tetoColors[0].hex}">
+                `;
+            } else {
+                innerHTML += `<input type="hidden" id="text-color-val-${id}" value="#1D1D1B">`;
+            }
+
+            div.innerHTML = innerHTML;
+            container.appendChild(div);
+            renderAll();
+        }
+
+        function addSpacer() {
+            spacerCounter++;
+            const id = spacerCounter;
+            const container = document.getElementById('text-blocks-container');
+            
+            const div = document.createElement('div');
+            div.className = 'dynamic-item-box';
+            div.id = `spacer-ctrl-${id}`;
+            div.setAttribute('data-type', 'spacer');
+            div.setAttribute('data-order', Date.now());
+            
+            div.innerHTML = `
+                <button class="btn-delete" onclick="removeSpacer(${id})">Excluir</button>
+                <label style="color:var(--teto-verde); font-weight:700;">Espaço (Respiro) #${id}</label>
+                <div class="form-group">
+                    <label>Altura do Espaço</label>
+                    <select id="spacer-height-${id}" onchange="renderAll()">
+                        <option value="1cm">1 cm</option>
+                        <option value="2cm" selected>2 cm</option>
+                        <option value="3cm">3 cm</option>
+                        <option value="5cm">5 cm</option>
+                    </select>
+                </div>
+            `;
+            
+            container.appendChild(div);
+            renderAll();
+        }
+
+        function addImageBlock() {
+            imageCounter++;
+            const id = imageCounter;
+            const container = document.getElementById('text-blocks-container');
+            
+            const div = document.createElement('div');
+            div.className = 'dynamic-item-box';
+            div.id = `image-ctrl-${id}`;
+            div.setAttribute('data-type', 'image');
+            div.setAttribute('data-order', Date.now());
+            
+            div.innerHTML = `
+                <button class="btn-delete" onclick="removeImage(${id})">Excluir</button>
+                <label style="color:var(--teto-roxo); font-weight:700;">Imagem Gráfica #${id}</label>
+                
+                <div class="form-group">
+                    <div class="file-upload-btn">📁 Upload de Imagem Local
+                        <input type="file" accept="image/*" onchange="handleImageUpload(this, ${id})">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="image-url-${id}" placeholder="Ou insira o Link/URL da imagem" oninput="handleImageUrl(${id}, this.value)">
+                </div>
+                
+                <div class="form-group">
+                    <label>Alinhamento</label>
+                    <select id="image-align-${id}" onchange="renderAll()">
+                        <option value="left">Esquerda</option>
+                        <option value="center" selected>Centralizado</option>
+                        <option value="right">Direita</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Largura (%)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="image-width-${id}" min="10" max="100" value="50" oninput="syncSliderToInput('image-width-${id}', 'image-width-num-${id}'); renderAll()">
+                        <input type="number" id="image-width-num-${id}" min="10" max="100" value="50" oninput="syncInputToSlider('image-width-num-${id}', 'image-width-${id}'); renderAll()">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(div);
+            renderAll();
+        }
+
+        function handleImageUpload(input, id) {
+            const file = input.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(`image-ctrl-${id}`).setAttribute('data-src', e.target.result);
+                    document.getElementById(`image-url-${id}`).value = "";
+                    renderAll();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleImageUrl(id, url) {
+            if(url.trim() !== "") {
+                document.getElementById(`image-ctrl-${id}`).setAttribute('data-src', url);
+            } else {
+                document.getElementById(`image-ctrl-${id}`).removeAttribute('data-src');
+            }
+            renderAll();
+        }
+
+        function removeImage(id) {
+            document.getElementById(`image-ctrl-${id}`).remove();
+            renderAll();
+        }
+
+        function removeSpacer(id) {
+            document.getElementById(`spacer-ctrl-${id}`).remove();
+            renderAll();
+        }
+
+        function setBlockColor(id, hex, element) {
+            const parent = document.getElementById(`text-color-grid-${id}`);
+            parent.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById(`text-color-val-${id}`).value = hex;
+            renderAll();
+        }
+
+        function removeTextBlock(id) {
+            document.getElementById(`text-block-ctrl-${id}`).remove();
+            renderAll();
+        }
+
+        function addTramaFromLink() {
+            const url = document.getElementById('trama-url-temp').value;
+            if (url.trim()) {
+                addTramaElement(url, 'Link personalizado');
+                document.getElementById('trama-url-temp').value = '';
+            }
+        }
+
+        function addTramaFromLibrary(img) {
+            addTramaElement(img.url, img.name);
+        }
+
+        function handleTramaUpload(input, type) {
+            const file = input.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (type === 'new') {
+                        addTramaElement(e.target.result, file.name);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function addTramaElement(src, name) {
+            tramaCounter++;
+            const id = tramaCounter;
+            const container = document.getElementById('tramas-controls-container') || createTramaContainer();
+            
+            const div = document.createElement('div');
+            div.className = 'trama-control-box';
+            div.id = `trama-ctrl-${id}`;
+            div.setAttribute('data-src', src);
+            div.setAttribute('data-name', name);
+            
+            div.innerHTML = `
+                <button class="btn-delete" onclick="removeTrama(${id})">Excluir</button>
+                <label style="color:var(--teto-ciano); font-weight:700; margin-bottom:8px; display:block;">${name}</label>
+
+                <div class="form-group">
+                    <label>Posição X (%)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="trama-x-${id}" min="-30" max="130" value="50" oninput="syncSliderToInput('trama-x-${id}', 'trama-x-num-${id}'); renderAllTramas()">
+                        <input type="number" id="trama-x-num-${id}" min="-30" max="130" value="50" oninput="syncInputToSlider('trama-x-num-${id}', 'trama-x-${id}'); renderAllTramas()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Posição Y (%)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="trama-y-${id}" min="-30" max="130" value="50" oninput="syncSliderToInput('trama-y-${id}', 'trama-y-num-${id}'); renderAllTramas()">
+                        <input type="number" id="trama-y-num-${id}" min="-30" max="130" value="50" oninput="syncInputToSlider('trama-y-num-${id}', 'trama-y-${id}'); renderAllTramas()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tamanho (%)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="trama-size-${id}" min="5" max="250" value="40" oninput="syncSliderToInput('trama-size-${id}', 'trama-size-num-${id}'); renderAllTramas()">
+                        <input type="number" id="trama-size-num-${id}" min="5" max="250" value="40" oninput="syncInputToSlider('trama-size-num-${id}', 'trama-size-${id}'); renderAllTramas()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Opacidade (%)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="trama-opacity-${id}" min="0" max="100" value="15" oninput="syncSliderToInput('trama-opacity-${id}', 'trama-opacity-num-${id}'); renderAllTramas()">
+                        <input type="number" id="trama-opacity-num-${id}" min="0" max="100" value="15" oninput="syncInputToSlider('trama-opacity-num-${id}', 'trama-opacity-${id}'); renderAllTramas()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Rotação (º)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="trama-rot-${id}" min="0" max="360" value="0" oninput="syncSliderToInput('trama-rot-${id}', 'trama-rot-num-${id}'); renderAllTramas()">
+                        <input type="number" id="trama-rot-num-${id}" min="0" max="360" value="0" oninput="syncInputToSlider('trama-rot-num-${id}', 'trama-rot-${id}'); renderAllTramas()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label style="cursor:pointer; font-size:8.5pt; display:flex; align-items:center;">
+                        <input type="checkbox" id="trama-flip-${id}" onchange="renderAllTramas()" style="margin-right:4px;"> Espelhar Trama
+                    </label>
+                </div>
+            `;
+            container.appendChild(div);
+            updateTramaList();
+            renderAllTramas();
+        }
+
+        function createTramaContainer() {
+            const container = document.createElement('div');
+            container.id = 'tramas-controls-container';
+            document.getElementById('tab-grafismos').insertBefore(container, document.getElementById('trama-elements-list'));
+            return container;
+        }
+
+        function updateTramaList() {
+            const listContainer = document.getElementById('trama-list-container');
+            listContainer.innerHTML = '';
+            
+            document.querySelectorAll('.trama-control-box').forEach(box => {
+                const id = box.id.replace('trama-ctrl-', '');
+                const name = box.getAttribute('data-name') || `Trama ${id}`;
+                const src = box.getAttribute('data-src');
+                
+                const item = document.createElement('div');
+                item.className = 'element-list-item';
+                item.innerHTML = `
+                    <img src="${src}" alt="${name}" onerror="this.style.display='none'">
+                    <div class="info">
+                        <div class="name">${name}</div>
+                        <div class="type">Elemento #${id}</div>
+                    </div>
+                    <button class="btn-remove-small" onclick="removeTrama(${id})">Excluir</button>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function removeTrama(id) {
+            const element = document.getElementById(`trama-ctrl-${id}`);
+            if (element) {
+                element.remove();
+                updateTramaList();
+                renderAllTramas();
+            }
+        }
+
+        function renderAllTramas() {
+            const bgLayer = document.getElementById('canvas-bg-layer');
+            bgLayer.innerHTML = "";
+            
+            document.querySelectorAll('.trama-control-box').forEach(box => {
+                const id = box.id.replace('trama-ctrl-', '');
+                const src = box.getAttribute('data-src');
+                const name = box.getAttribute('data-name') || `Trama ${id}`;
+                if(!src) return;
+
+                const x = document.getElementById(`trama-x-${id}`).value;
+                const y = document.getElementById(`trama-y-${id}`).value;
+                const size = document.getElementById(`trama-size-${id}`).value;
+                const opacity = document.getElementById(`trama-opacity-${id}`).value;
+                const rot = document.getElementById(`trama-rot-${id}`).value;
+                const flip = document.getElementById(`trama-flip-${id}`).checked;
+
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'trama-element';
+                img.setAttribute('data-id', id);
+                img.setAttribute('data-name', name);
+                img.style.left = x + '%';
+                img.style.top = y + '%';
+                img.style.width = size + '%';
+                img.style.opacity = opacity / 100;
+
+                let trans = `translate(-50%, -50%) rotate(${rot}deg)`;
+                if(flip) trans += ` scaleX(-1)`;
+                img.style.transform = trans;
+                
+                // Drag functionality
+                makeDraggable(img);
+
+                bgLayer.appendChild(img);
+            });
+        }
+
+        function makeDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            element.onmousedown = dragMouseDown;
+            element.ontouchstart = dragMouseDown;
+            
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                
+                if (e.type === 'touchstart') {
+                    pos3 = e.touches[0].clientX;
+                    pos4 = e.touches[0].clientY;
+                } else {
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                }
+                
+                element.classList.add('dragging');
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+                document.ontouchend = closeDragElement;
+                document.ontouchmove = elementDrag;
+            }
+            
+            function elementDrag(e) {
+                e = e || window.event;
+                
+                let clientX, clientY;
+                if (e.type === 'touchmove') {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                pos1 = pos3 - clientX;
+                pos2 = pos4 - clientY;
+                pos3 = clientX;
+                pos4 = clientY;
+                
+                const canvas = document.getElementById('page-canvas');
+                const rect = canvas.getBoundingClientRect();
+                
+                let newLeft = ((element.offsetLeft - pos1) / rect.width) * 100;
+                let newTop = ((element.offsetTop - pos2) / rect.height) * 100;
+                
+                newLeft = Math.max(0, Math.min(100, newLeft));
+                newTop = Math.max(0, Math.min(100, newTop));
+                
+                element.style.left = newLeft + '%';
+                element.style.top = newTop + '%';
+                
+                // Update slider values
+                const id = element.getAttribute('data-id');
+                document.getElementById(`trama-x-${id}`).value = Math.round(newLeft);
+                document.getElementById(`trama-x-num-${id}`).value = Math.round(newLeft);
+                document.getElementById(`trama-y-${id}`).value = Math.round(newTop);
+                document.getElementById(`trama-y-num-${id}`).value = Math.round(newTop);
+            }
+            
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                document.ontouchend = null;
+                document.ontouchmove = null;
+                element.classList.remove('dragging');
+            }
+        }
+
+        function renderAll() {
+            const urlLogoInput = document.getElementById('logo-url').value;
+            if(urlLogoInput.trim() !== "" && currentImageSources.logo === 'link') {
+                document.getElementById('canvas-logo').src = urlLogoInput;
+            }
+            
+            const logoPos = document.getElementById('logo-position').value;
+            const logoSize = document.getElementById('logo-size').value;
+            const wrapper = document.getElementById('canvas-logo-wrapper');
+            wrapper.className = `logo-wrapper ${logoPos}`;
+            document.getElementById('canvas-logo').style.transform = `scale(${logoSize/100})`;
+
+            const bgUrl = document.getElementById('bg-image-url').value;
+            const bgOpacity = document.getElementById('bg-opacity').value / 100;
+            const canvas = document.getElementById('page-canvas');
+            
+            if(bgUrl.trim() !== "") {
+                canvas.style.backgroundImage = `url('${bgUrl}')`;
+                canvas.style.backgroundSize = "cover";
+                canvas.style.backgroundPosition = "center";
+                canvas.style.backgroundBlendMode = "normal";
+                
+                // Create overlay for opacity
+                let overlay = document.getElementById('bg-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'bg-overlay';
+                    overlay.style.position = 'absolute';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.width = '100%';
+                    overlay.style.height = '100%';
+                    overlay.style.zIndex = '0';
+                    overlay.style.pointerEvents = 'none';
+                    canvas.insertBefore(overlay, canvas.firstChild);
+                }
+                overlay.style.backgroundColor = `rgba(255,255,255,${1 - bgOpacity})`;
+            } else {
+                canvas.style.backgroundImage = "none";
+                const overlay = document.getElementById('bg-overlay');
+                if (overlay) overlay.remove();
+            }
+
+            const stream = document.getElementById('canvas-text-stream');
+            stream.innerHTML = "";
+
+            const allBlocks = document.querySelectorAll('.dynamic-item-box');
+            const sortedBlocks = Array.from(allBlocks).sort((a, b) => {
+                return parseInt(a.getAttribute('data-order')) - parseInt(b.getAttribute('data-order'));
+            });
+
+            sortedBlocks.forEach(box => {
+                const type = box.getAttribute('data-type');
+                
+                if (type === 'spacer') {
+                    const id = box.id.replace('spacer-ctrl-', '');
+                    const height = document.getElementById(`spacer-height-${id}`).value;
+                    const spacer = document.createElement('div');
+                    spacer.className = 'canvas-spacer';
+                    spacer.style.height = height;
+                    spacer.innerText = `Espaço: ${height}`;
+                    stream.appendChild(spacer);
+                } 
+                else if (type === 'image') {
+                    const id = box.id.replace('image-ctrl-', '');
+                    const src = box.getAttribute('data-src');
+                    if (!src) return;
+                    
+                    const align = document.getElementById(`image-align-${id}`).value;
+                    const width = document.getElementById(`image-width-${id}`).value;
+                    
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = `canvas-image align-${align}`;
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.style.width = width + '%';
+                    imgDiv.appendChild(img);
+                    stream.appendChild(imgDiv);
+                }
+                else {
+                    const id = box.id.replace('text-block-ctrl-', '');
+                    const text = document.getElementById(`text-val-${id}`).value;
+                    const font = document.getElementById(`text-font-${id}`).value;
+                    const size = document.getElementById(`text-size-${id}`).value;
+                    const color = document.getElementById(`text-color-val-${id}`).value;
+
+                    const block = document.createElement('div');
+                    block.className = `canvas-item canvas-${type}`;
+                    block.innerText = text;
+                    block.style.fontFamily = font;
+                    block.style.fontSize = size + 'pt';
+                    block.style.color = color;
+
+                    stream.appendChild(block);
+                }
+            });
+
+            const name = document.getElementById('sig-name').value;
+            const role = document.getElementById('sig-role').value;
+            const sigContainer = document.getElementById('canvas-signature');
+            
+            if(name.trim() !== "" || role.trim() !== "") {
+                sigContainer.style.display = "flex";
+                document.getElementById('canvas-sig-name').innerText = name;
+                document.getElementById('canvas-sig-role').innerText = role;
+            } else {
+                sigContainer.style.display = "none";
+            }
+        }
+
+        const tetoColors = [
+            { hex: "#0092DD" }, { hex: "#FDC533" }, { hex: "#2FAC66" }, 
+            { hex: "#005CA9" }, { hex: "#E94362" }, { hex: "#F08866" }, 
+            { hex: "#954897" }, { hex: "#1D1D1B" }
+        ];
+    </script>
+</body>
+</html>
